@@ -33,16 +33,24 @@ jobs:
           }
 
       - name: Copy code to IIS root
+        shell: pwsh
         run: |
           $source = "${{ github.workspace }}"
           $target = "C:\inetpub\wwwroot\laravel"
-
+      
           if (!(Test-Path $target)) {
             New-Item -ItemType Directory -Path $target
           }
-
-          # Mirror the directory, excluding Git and example files
+      
           robocopy $source $target /MIR /XD .git .github /XF .env.example .gitattributes
+          $rc = $LASTEXITCODE
+          Write-Host "Robocopy exit code: $rc"
+      
+          if ($rc -ge 8) {
+            Write-Error "robocopy failed with exit code $rc"
+            exit $rc
+          }
+
 
       - name: Laravel setup
         run: |
