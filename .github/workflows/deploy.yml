@@ -37,24 +37,28 @@ jobs:
           $source = "${{ github.workspace }}"
           $target = "C:\inetpub\wwwroot\laravel"
 
-          # Create folder if not exists
           if (!(Test-Path $target)) {
             New-Item -ItemType Directory -Path $target
           }
 
-          # Copy files except .git
+          # Mirror the directory, excluding Git and example files
           robocopy $source $target /MIR /XD .git .github /XF .env.example .gitattributes
 
       - name: Laravel setup
         run: |
           cd C:\inetpub\wwwroot\laravel
-          cp .env.production .env  # or create dynamically
-         
+          if (Test-Path ".env.production") {
+            Copy-Item .env.production .env -Force
+          }
+          php artisan config:clear
+          php artisan config:cache
+          php artisan route:cache
+          php artisan view:cache
 
-      - name: Set folder permissions (optional)
+      - name: Set folder permissions (storage, bootstrap/cache)
         run: |
           icacls "C:\inetpub\wwwroot\laravel\storage" /grant "IIS_IUSRS:(OI)(CI)F" /T
           icacls "C:\inetpub\wwwroot\laravel\bootstrap\cache" /grant "IIS_IUSRS:(OI)(CI)F" /T
 
-      - name: Restart IIS (optional)
+      - name: Restart IIS
         run: iisreset
