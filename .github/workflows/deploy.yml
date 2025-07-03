@@ -31,6 +31,11 @@ jobs:
             (Get-Content $file) -replace 'name{0}', 'name[0]' | Set-Content $file
           }
 
+      - name: Check sed availability
+        run: sed --version
+        shell: pwsh
+        continue-on-error: true
+
       - name: Copy code to IIS root
         shell: pwsh
         run: |
