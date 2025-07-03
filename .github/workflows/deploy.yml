@@ -21,11 +21,10 @@ jobs:
           php -v
           composer -V
 
-      - name: Install Laravel dependencies
-        run: |
-          composer install --no-dev --optimize-autoloader
+      - name: Install Laravel dependencies (skip scripts)
+        run: composer install --no-dev --optimize-autoloader --no-scripts
 
-      - name: Fix vfsStream.php (replace name{0} → name[0])
+      - name: Fix vfsStream.php (PowerShell replacement for sed)
         run: |
           $file = "vendor\mikey179\vfsstream\src\main\php\org\bovigo\vfs\vfsStream.php"
           if (Test-Path $file) {
@@ -37,20 +36,19 @@ jobs:
         run: |
           $source = "${{ github.workspace }}"
           $target = "C:\inetpub\wwwroot\laravel"
-      
+
           if (!(Test-Path $target)) {
             New-Item -ItemType Directory -Path $target
           }
-      
+
           robocopy $source $target /MIR /XD .git .github /XF .env.example .gitattributes
           $rc = $LASTEXITCODE
           Write-Host "Robocopy exit code: $rc"
-      
+
           if ($rc -ge 8) {
             Write-Error "robocopy failed with exit code $rc"
             exit $rc
           }
-
 
       - name: Laravel setup
         run: |
@@ -63,10 +61,10 @@ jobs:
           php artisan route:cache
           php artisan view:cache
 
-      - name: Set folder permissions (storage, bootstrap/cache)
+      - name: Set folder permissions (storage and cache)
         run: |
           icacls "C:\inetpub\wwwroot\laravel\storage" /grant "IIS_IUSRS:(OI)(CI)F" /T
           icacls "C:\inetpub\wwwroot\laravel\bootstrap\cache" /grant "IIS_IUSRS:(OI)(CI)F" /T
 
-      - name: Restart IIS
+      - name: Restart IIS (optional)
         run: iisreset
