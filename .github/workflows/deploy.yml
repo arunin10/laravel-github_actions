@@ -25,6 +25,13 @@ jobs:
         run: |
           composer install --no-dev --optimize-autoloader
 
+      - name: Fix vfsStream.php (replace name{0} → name[0])
+        run: |
+          $file = "vendor\mikey179\vfsstream\src\main\php\org\bovigo\vfs\vfsStream.php"
+          if (Test-Path $file) {
+            (Get-Content $file) -replace 'name{0}', 'name[0]' | Set-Content $file
+          }
+
       - name: Copy code to IIS root
         run: |
           $source = "${{ github.workspace }}"
