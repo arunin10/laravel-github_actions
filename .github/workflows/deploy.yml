@@ -42,10 +42,7 @@ jobs:
         run: |
           cd C:\inetpub\wwwroot\laravel
           cp .env.production .env  # or create dynamically
-          php artisan config:clear
-          php artisan config:cache
-          php artisan route:cache
-          php artisan view:cache
+         
 
       - name: Set folder permissions (optional)
         run: |
