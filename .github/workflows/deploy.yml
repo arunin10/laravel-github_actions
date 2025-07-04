@@ -25,7 +25,8 @@ jobs:
             New-Item -ItemType Directory -Path $target
           }
   
-          robocopy $source $target /E /XO /XN /XC /XD .git .github /XF .env.example .gitattributes
+          robocopy $source $target /E /XO /XD .git .github /XF .env.example .gitattributes
+
           $rc = $LASTEXITCODE
           Write-Host "Robocopy exit code: $rc"
   
