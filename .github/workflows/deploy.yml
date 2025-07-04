@@ -1,11 +1,11 @@
-name: Deploy Laravel to IIS on Windows Server
+name: Deploy CodeIgniter to IIS on Windows Server
 
 on:
   push:
     branches: [main]
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: self-hosted
     defaults:
       run:
@@ -15,42 +15,27 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Set environment path for PHP and Composer
-        run: |
-          $env:Path += ";C:\php;C:\ProgramData\ComposerSetup\bin"
-          php -v
-          composer -V
-
-      - name: Install Laravel dependencies
-        run: |
-          composer install --no-dev --optimize-autoloader
-
-      - name: Copy code to IIS root
+      - name: Copy CodeIgniter code to IIS root
+        shell: pwsh
         run: |
           $source = "${{ github.workspace }}"
-          $target = "C:\inetpub\wwwroot\laravel"
-
-          # Create folder if not exists
+          $target = "C:\inetpub\wwwroot\codeigniter"
+  
           if (!(Test-Path $target)) {
             New-Item -ItemType Directory -Path $target
           }
-
-          # Copy files except .git
-          robocopy $source $target /MIR /XD .git .github /XF .env.example .gitattributes
-
-      - name: Laravel setup
-        run: |
-          cd C:\inetpub\wwwroot\laravel
-          cp .env.production .env  # or create dynamically
-          php artisan config:clear
-          php artisan config:cache
-          php artisan route:cache
-          php artisan view:cache
+  
+          robocopy $source $target /E /XO /XN /XC /XD .git .github /XF .env.example .gitattributes
+          $rc = $LASTEXITCODE
+          Write-Host "Robocopy exit code: $rc"
+  
+          if ($rc -lt 8) {
+            exit 0
+          } else {
+            Write-Error "Robocopy failed with exit code $rc"
+            exit $rc
+          }
 
       - name: Set folder permissions (optional)
         run: |
-          icacls "C:\inetpub\wwwroot\laravel\storage" /grant "IIS_IUSRS:(OI)(CI)F" /T
-          icacls "C:\inetpub\wwwroot\laravel\bootstrap\cache" /grant "IIS_IUSRS:(OI)(CI)F" /T
-
-      - name: Restart IIS (optional)
-        run: iisreset
+          icacls "C:\inetpub\wwwroot\codeigniter\writable" /grant "IIS_IUSRS:(OI)(CI)F" /T
