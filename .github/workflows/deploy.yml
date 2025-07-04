@@ -15,26 +15,26 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-        - name: Copy CodeIgniter code to IIS root
-          shell: pwsh
-          run: |
-            $source = "${{ github.workspace }}"
-            $target = "C:\inetpub\wwwroot\codeigniter"
+      - name: Copy CodeIgniter code to IIS root
+        shell: pwsh
+        run: |
+          $source = "${{ github.workspace }}"
+          $target = "C:\inetpub\wwwroot\codeigniter"
   
-            if (!(Test-Path $target)) {
-              New-Item -ItemType Directory -Path $target
-            }
+          if (!(Test-Path $target)) {
+            New-Item -ItemType Directory -Path $target
+          }
   
-            robocopy $source $target /E /XO /XN /XC /XD .git .github /XF .env.example .gitattributes
-            $rc = $LASTEXITCODE
-            Write-Host "Robocopy exit code: $rc"
+          robocopy $source $target /E /XO /XN /XC /XD .git .github /XF .env.example .gitattributes
+          $rc = $LASTEXITCODE
+          Write-Host "Robocopy exit code: $rc"
   
-            if ($rc -lt 8) {
-              exit 0
-            } else {
-              Write-Error "Robocopy failed with exit code $rc"
-              exit $rc
-            }
+          if ($rc -lt 8) {
+            exit 0
+          } else {
+            Write-Error "Robocopy failed with exit code $rc"
+            exit $rc
+          }
 
       - name: Set folder permissions (optional)
         run: |
