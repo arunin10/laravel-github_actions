@@ -39,6 +39,3 @@ jobs:
       - name: Set folder permissions (optional)
         run: |
           icacls "C:\inetpub\wwwroot\codeigniter\writable" /grant "IIS_IUSRS:(OI)(CI)F" /T
-
-      - name: Restart IIS (optional)
-        run: iisreset
