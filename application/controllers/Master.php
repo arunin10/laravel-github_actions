@@ -10,7 +10,7 @@ class Master extends CI_Controller {
 		 //$this->load->model('RegModel');
 		 $this->load->library('session');
 		 //ini_set("default_socket_timeout", 6000);
-		 //testing
+		 ///testing
 	}
 
 	public function index(){
